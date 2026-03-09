@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Realaize Capital — Platform Demo v2.0</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◈</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:#070E1A;color:#E8E4DC}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#0A1628}::-webkit-scrollbar-thumb{background:#1A2A4A;border-radius:3px}::-webkit-scrollbar-thumb:hover{background:#C4A962}#root{height:100vh}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+</head>
+<body>
+<div id="root"></div>
+<script>
+// Loading screen while Babel compiles
+document.getElementById('root').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#070E1A"><div style="text-align:center"><div style="font-size:24px;font-weight:800;color:#C4A962;letter-spacing:1px">REALAIZE CAPITAL</div><div style="font-size:12px;color:#7A8BA8;margin-top:8px">Loading platform demo...</div></div></div>';
+// Load JSX from external file
+var s = document.createElement('script');
+s.type = 'text/babel';
+s.src = 'app.jsx';
+s.setAttribute('data-type', 'module');
+document.body.appendChild(s);
+</script>
+</body>
+</html>
