@@ -1,27 +1,815 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Realaize Capital — Platform Demo v2.0</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◈</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:#070E1A;color:#E8E4DC}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:#0A1628}::-webkit-scrollbar-thumb{background:#1A2A4A;border-radius:3px}::-webkit-scrollbar-thumb:hover{background:#C4A962}#root{height:100vh}</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Realaize Capital — Platform Specification v2.0</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◈</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: #070E1A; color: #E8E4DC; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0A1628; }
+    ::-webkit-scrollbar-thumb { background: #1A2A4A; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #C4A962; }
+    #root { height: 100vh; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 </head>
 <body>
-<div id="root"></div>
-<script>
-// Loading screen while Babel compiles
-document.getElementById('root').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#070E1A"><div style="text-align:center"><div style="font-size:24px;font-weight:800;color:#C4A962;letter-spacing:1px">REALAIZE CAPITAL</div><div style="font-size:12px;color:#7A8BA8;margin-top:8px">Loading platform demo...</div></div></div>';
-// Load JSX from external file
-var s = document.createElement('script');
-s.type = 'text/babel';
-s.src = 'app.jsx';
-s.setAttribute('data-type', 'module');
-document.body.appendChild(s);
-</script>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useCallback } = React;
+
+
+// ── COLORS ──
+const C = {
+  navy: "#0D1B3E", navyLight: "#132347", gold: "#C4A962", goldMuted: "#9E8A52",
+  bg: "#070E1A", card: "#0E1A30", cardHover: "#132040", border: "#1A2A4A",
+  text: "#E8E4DC", textMuted: "#7A8BA8", white: "#FFFFFF",
+  green: "#34D399", red: "#F87171", orange: "#FBBF24", blue: "#60A5FA",
+  purple: "#A78BFA", pink: "#F472B6", cyan: "#22D3EE",
+};
+
+// ── MOCK DATA ──
+const TEAM = ["Davide", "Gonzalo", "Alejandro", "Daniele"];
+
+const ASSETS = [
+  { id: 1, name: "Hotel Boutique Málaga", zone: "Málaga", type: "Alternative Hospitality", pipeline: "Investment", gate: "DD pre-arras", responsible: "Davide", price: "8.2M €", equity: "4.1M €", equityRaised: "2.8M €", irr: "22%", roi: "35%", m2: "3.200 m²" },
+  { id: 2, name: "Residencial BTS Valencia", zone: "Valencia", type: "Residencial BTS", pipeline: "Investment", gate: "LOI enviada", responsible: "Gonzalo", price: "12.5M €", equity: "6.2M €", equityRaised: "0", irr: "18%", roi: "28%", m2: "5.800 m²" },
+  { id: 3, name: "Flex Living Barcelona", zone: "Barcelona", type: "Flex Living", pipeline: "Pre-screening", gate: "Analizando", responsible: "Alejandro", price: "15M €", equity: "7.5M €", equityRaised: "0", irr: "—", roi: "—", m2: "4.100 m²" },
+  { id: 4, name: "Co-Living Madrid Centro", zone: "Madrid", type: "Co-Living", pipeline: "Pre-screening", gate: "Para analizar", responsible: "Davide", price: "6.8M €", equity: "3.4M €", equityRaised: "0", irr: "—", roi: "—", m2: "2.400 m²" },
+  { id: 5, name: "Senior Living Sevilla", zone: "Sevilla", type: "Senior Living", pipeline: "Pre-screening", gate: "Analizado con BP", responsible: "Gonzalo", price: "9.5M €", equity: "4.7M €", equityRaised: "0", irr: "25%", roi: "40%", m2: "3.800 m²" },
+  { id: 6, name: "Hostel Premium Lisbon", zone: "Lisboa", type: "Alternative Hospitality", pipeline: "Transaction", gate: "Tender operadores", responsible: "Daniele", price: "5.2M €", equity: "2.6M €", equityRaised: "0", irr: "20%", roi: "32%", m2: "1.900 m²" },
+  { id: 7, name: "BTR Bilbao Waterfront", zone: "Bilbao", type: "BTR", pipeline: "Investment", gate: "Contrato de arras", responsible: "Davide", price: "18M €", equity: "9M €", equityRaised: "6.5M €", irr: "19%", roi: "30%", m2: "7.200 m²" },
+  { id: 8, name: "PBSA Salamanca", zone: "Salamanca", type: "PBSA", pipeline: "Pre-screening", gate: "Para analizar", responsible: "Alejandro", price: "4.3M €", equity: "2.1M €", equityRaised: "0", irr: "—", roi: "—", m2: "1.600 m²" },
+];
+
+const INVESTORS = [
+  { id: 1, name: "Nordic Capital Partners", type: "Fondo de Pensiones", category: "Equity", ticket: "2-5M €", status: "Invirtiendo", responsible: "Davide", lastContact: "Hace 2 días", geo: "Nordics" },
+  { id: 2, name: "Martínez Family Office", type: "Family Office", category: "Equity", ticket: "500K-2M €", status: "Activo", responsible: "Gonzalo", lastContact: "Hace 5 días", geo: "España" },
+  { id: 3, name: "Al Rashid Investments", type: "Fondo Soberano", category: "Equity", ticket: "5-15M €", status: "Cualificado", responsible: "Davide", lastContact: "Hace 1 semana", geo: "Middle East" },
+  { id: 4, name: "Lombardi & Associati", type: "Club Deal", category: "Equity", ticket: "1-3M €", status: "Contactado", responsible: "Daniele", lastContact: "Hace 3 días", geo: "Italia" },
+  { id: 5, name: "Green Bridge Capital", type: "Corporate", category: "Equity", ticket: "3-8M €", status: "Identificado", responsible: "Gonzalo", lastContact: "—", geo: "UK" },
+  { id: 6, name: "Deutsche Immobilien AG", type: "Developer", category: "Ambos", ticket: "2-10M €", status: "Activo", responsible: "Alejandro", lastContact: "Hace 4 días", geo: "Alemania" },
+];
+
+const PROPOSALS = [
+  { id: 1, type: "Inversión", asset: "Hotel Boutique Málaga", counterpart: "Nordic Capital Partners", status: "Comprometido", amount: "1.5M €", responsible: "Davide" },
+  { id: 2, type: "Inversión", asset: "Hotel Boutique Málaga", counterpart: "Martínez Family Office", status: "Interesado", amount: "800K €", responsible: "Gonzalo" },
+  { id: 3, type: "Inversión", asset: "Hotel Boutique Málaga", counterpart: "Lombardi & Associati", status: "Enviada", amount: "500K €", responsible: "Daniele" },
+  { id: 4, type: "Inversión", asset: "BTR Bilbao Waterfront", counterpart: "Nordic Capital Partners", status: "Firmado", amount: "3M €", responsible: "Davide" },
+  { id: 5, type: "Inversión", asset: "BTR Bilbao Waterfront", counterpart: "Al Rashid Investments", status: "Comprometido", amount: "3.5M €", responsible: "Davide" },
+  { id: 6, type: "Operador", asset: "Hotel Boutique Málaga", counterpart: "MedHotels Group", status: "Propuesta recibida", amount: "—", responsible: "Alejandro" },
+  { id: 7, type: "Operador", asset: "Hostel Premium Lisbon", counterpart: "UrbanStay Co.", status: "Contactado", amount: "—", responsible: "Daniele" },
+  { id: 8, type: "Lenders", asset: "BTR Bilbao Waterfront", counterpart: "CaixaBank", status: "Term sheet recibida", amount: "9M €", responsible: "Davide" },
+  { id: 9, type: "Advisory", asset: "Residencial Costa Sol", counterpart: "Al Rashid Investments", status: "En ejecución", amount: "Advisory fee", responsible: "Davide" },
+];
+
+const NEEDS = [
+  { id: 1, investor: "Al Rashid Investments", criteria: "Hoteles boutique, costa mediterránea, 5-15M €", status: "En búsqueda activa", matches: 2 },
+  { id: 2, investor: "Nordic Capital Partners", criteria: "BTR/Co-Living, capitales españolas, >10M €", status: "Con candidatos", matches: 3 },
+  { id: 3, investor: "Deutsche Immobilien AG", criteria: "Residencial BTS, cualquier zona, 5-20M €", status: "Registrada", matches: 1 },
+  { id: 4, investor: "Martínez Family Office", criteria: "Senior Living, sur España, 3-10M €", status: "Propuesta enviada", matches: 1 },
+];
+
+const OPERATORS = [
+  { id: 1, name: "MedHotels Group", type: "Hoteles boutique", zone: "Mediterráneo", model: "Management Contract", status: "En red activa" },
+  { id: 2, name: "UrbanStay Co.", type: "Hostels / Co-Living", zone: "Europa Sur", model: "Lease", status: "En conversación" },
+  { id: 3, name: "SeniorCare Partners", type: "Senior Living", zone: "España", model: "Management Contract", status: "Cualificado" },
+  { id: 4, name: "FlexSpace Operators", type: "Flex Living / PBSA", zone: "Iberia", model: "Franchise", status: "Contactado" },
+];
+
+const LENDERS = [
+  { id: 1, name: "CaixaBank", type: "Banco comercial", ltv: "Hasta 65%", status: "En red activa" },
+  { id: 2, name: "Aareal Bank", type: "Banco especializado", ltv: "Hasta 70%", status: "Cualificado" },
+  { id: 3, name: "Bain Capital Credit", type: "Fondo de deuda", ltv: "Hasta 80%", status: "En conversación" },
+];
+
+const COLLABORATORS = [
+  { id: 1, name: "Carlos Ruiz", category: "Broker", zone: "Costa del Sol", assets: 4, lastContact: "Hace 1 semana" },
+  { id: 2, name: "Ana García", category: "Abogada", zone: "Madrid", assets: 3, lastContact: "Hace 3 días" },
+  { id: 3, name: "Pedro Martín", category: "Arquitecto", zone: "Barcelona", assets: 2, lastContact: "Hace 2 semanas" },
+  { id: 4, name: "Sofia Bianchi", category: "Buscadora", zone: "Portugal", assets: 1, lastContact: "Hace 5 días" },
+];
+
+const TASKS = [
+  { id: 1, text: "Completar análisis financiero", entity: "Flex Living Barcelona", type: "Activo", priority: "Alta", due: "Hoy" },
+  { id: 2, text: "Enviar propuesta inversión", entity: "Nordic Capital Partners", type: "Propuesta", priority: "Alta", due: "Mañana" },
+  { id: 3, text: "Llamar para seguimiento", entity: "MedHotels Group", type: "Operador", priority: "Media", due: "Miércoles" },
+  { id: 4, text: "Revisar term sheet", entity: "CaixaBank - BTR Bilbao", type: "Lender", priority: "Alta", due: "Hoy" },
+  { id: 5, text: "Actualizar BP con nuevos datos", entity: "Senior Living Sevilla", type: "Activo", priority: "Media", due: "Viernes" },
+  { id: 6, text: "Contactar inversor potencial", entity: "Green Bridge Capital", type: "Inversor", priority: "Baja", due: "Próx. semana" },
+];
+
+// ── HELPERS ──
+const statusColor = (s) => {
+  const map = { "Para analizar": C.textMuted, "Analizando": C.orange, "Analizado con BP": C.blue, "LOI enviada": C.gold, "DD pre-arras": C.orange, "Contrato de arras": C.purple, "DD pre-escritura": C.pink, "Escriturado": C.green, "Perdido": C.red, "Tender operadores": C.gold, "Propuesta recibida": C.orange, "Contrato firmado": C.green, "Borrador": C.textMuted, "Enviada": C.blue, "Vista": C.cyan, "Interesado": C.orange, "Comprometido": C.purple, "Firmado": C.green, "Capital ingresado": C.green, "Descartada": C.red, "Registrada": C.textMuted, "En búsqueda activa": C.orange, "Con candidatos": C.blue, "Propuesta enviada": C.purple, "Cerrada (match)": C.green, "Cancelada": C.red, "Identificado": C.textMuted, "Contactado": C.cyan, "Cualificado": C.blue, "Activo": C.green, "Invirtiendo": C.purple, "Inactivo": C.red, "En conversación": C.orange, "En red activa": C.green, "En ejecución": C.purple, "Negociación": C.orange, "Term sheet recibida": C.purple, "Acuerdo cerrado": C.green, "Aprobado": C.green, "Formalizado": C.green, "Mandato firmado": C.green, "Operador identificado": C.textMuted, "Lender identificado": C.textMuted, "Dossier enviado": C.blue, "En análisis": C.orange, "Info enviada": C.blue };
+  return map[s] || C.textMuted;
+};
+
+const Badge = ({ text, color }) => (
+  <span style={{ display: "inline-flex", padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: (color || C.gold) + "18", color: color || C.gold, border: `1px solid ${(color || C.gold)}30`, whiteSpace: "nowrap" }}>{text}</span>
+);
+
+const Dot = ({ color }) => <span style={{ width: 8, height: 8, borderRadius: "50%", background: color, display: "inline-block", flexShrink: 0 }}/>;
+
+const priorityColor = (p) => p === "Alta" ? C.red : p === "Media" ? C.orange : C.textMuted;
+
+// ── FICHA DETAIL MODAL ──
+const FichaModal = ({ entity, type, onClose }) => {
+  const [tab, setTab] = useState(0);
+  if (!entity) return null;
+
+  let tabs = [];
+  let content = null;
+
+  if (type === "asset") {
+    const a = entity;
+    tabs = ["General", "Financiero", "Funding", "Propuestas", "Matching", "Similares", "Docs", "Emails", "Tareas", "Historial"];
+    const relatedProposals = PROPOSALS.filter(p => p.asset === a.name);
+    const tabContents = [
+      <div key="g" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        {[["Nombre", a.name], ["Zona", a.zone], ["Tipología", a.type], ["Pipeline", a.pipeline], ["Gate", a.gate], ["Responsable", a.responsible], ["Superficie", a.m2], ["Precio", a.price]].map(([l, v], i) => (
+          <div key={i} style={{ padding: 12, borderRadius: 8, background: C.bg }}>
+            <div style={{ fontSize: 10, color: C.textMuted, textTransform: "uppercase", letterSpacing: 1 }}>{l}</div>
+            <div style={{ fontSize: 14, color: C.text, fontWeight: 600, marginTop: 4 }}>{v}</div>
+          </div>
+        ))}
+      </div>,
+      <div key="f" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+        {[["Inversión Total", a.price], ["Equity Need", a.equity], ["ROI", a.roi], ["IRR", a.irr], ["Equity Levantado", a.equityRaised], ["Gap", a.equityRaised === "0" ? a.equity : "1.3M €"]].map(([l, v], i) => (
+          <div key={i} style={{ padding: 16, borderRadius: 10, background: C.bg, textAlign: "center" }}>
+            <div style={{ fontSize: 10, color: C.textMuted, letterSpacing: 1 }}>{l}</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: i === 2 || i === 3 ? C.green : C.gold, marginTop: 6 }}>{v}</div>
+          </div>
+        ))}
+      </div>,
+      <div key="fu">
+        <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
+          {[["Equity Need", a.equity, C.gold], ["Comprometido", a.equityRaised, C.purple], ["Ingresado", a.equityRaised === "0" ? "0" : "0 €", C.green]].map(([l, v, c], i) => (
+            <div key={i} style={{ flex: 1, padding: 16, borderRadius: 10, background: C.bg, textAlign: "center", borderTop: `3px solid ${c}` }}>
+              <div style={{ fontSize: 10, color: C.textMuted }}>{l}</div>
+              <div style={{ fontSize: 18, fontWeight: 800, color: c, marginTop: 4 }}>{v}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ padding: 12, borderRadius: 8, background: C.bg }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: C.text, marginBottom: 8 }}>Propuestas de financiación</div>
+          {relatedProposals.length > 0 ? relatedProposals.map((p, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.border}` }}>
+              <span style={{ fontSize: 12, color: C.text }}>{p.counterpart}</span>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                <span style={{ fontSize: 12, color: C.gold }}>{p.amount}</span>
+                <Badge text={p.status} color={statusColor(p.status)} />
+              </div>
+            </div>
+          )) : <div style={{ fontSize: 12, color: C.textMuted }}>Sin propuestas vinculadas</div>}
+        </div>
+      </div>,
+      <div key="p">
+        {relatedProposals.length > 0 ? relatedProposals.map((p, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 12, borderRadius: 8, background: C.bg, marginBottom: 8 }}>
+            <div>
+              <Badge text={p.type} color={p.type === "Inversión" ? C.green : p.type === "Operador" ? C.pink : p.type === "Lenders" ? C.purple : C.gold} />
+              <span style={{ fontSize: 13, color: C.text, marginLeft: 10, fontWeight: 500 }}>{p.counterpart}</span>
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <span style={{ fontSize: 12, color: C.textMuted }}>{p.amount}</span>
+              <Badge text={p.status} color={statusColor(p.status)} />
+            </div>
+          </div>
+        )) : <div style={{ color: C.textMuted, fontSize: 13 }}>Sin propuestas vinculadas</div>}
+      </div>,
+      <div key="m">
+        <div style={{ fontSize: 12, fontWeight: 600, color: C.green, marginBottom: 8 }}>Inversores compatibles</div>
+        {INVESTORS.slice(0, 3).map((inv, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", borderRadius: 6, background: C.bg, marginBottom: 4 }}>
+            <span style={{ fontSize: 12, color: C.text }}>{inv.name}</span>
+            <span style={{ fontSize: 11, color: C.green }}>Score: {85 - i * 12}%</span>
+          </div>
+        ))}
+        <div style={{ fontSize: 12, fontWeight: 600, color: C.pink, margin: "16px 0 8px" }}>Operadores compatibles</div>
+        {OPERATORS.slice(0, 2).map((op, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", borderRadius: 6, background: C.bg, marginBottom: 4 }}>
+            <span style={{ fontSize: 12, color: C.text }}>{op.name}</span>
+            <span style={{ fontSize: 11, color: C.pink }}>{op.type}</span>
+          </div>
+        ))}
+      </div>,
+    ];
+    content = tabContents[tab] || <div style={{ color: C.textMuted, fontSize: 13, padding: 20, textAlign: "center" }}>Contenido de pestaña "{tabs[tab]}"</div>;
+  } else if (type === "investor") {
+    const inv = entity;
+    tabs = ["General", "Necesidades", "Propuestas", "Matching", "Seguimiento", "Emails", "Docs", "Vínculos"];
+    const relatedProposals = PROPOSALS.filter(p => p.counterpart === inv.name);
+    const relatedNeeds = NEEDS.filter(n => n.investor === inv.name);
+    const tabContents = [
+      <div key="g" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+        {[["Nombre", inv.name], ["Tipo", inv.type], ["Categoría", inv.category], ["Ticket", inv.ticket], ["Estado", inv.status], ["Responsable", inv.responsible], ["Último contacto", inv.lastContact], ["Geografía", inv.geo]].map(([l, v], i) => (
+          <div key={i} style={{ padding: 12, borderRadius: 8, background: C.bg }}>
+            <div style={{ fontSize: 10, color: C.textMuted, textTransform: "uppercase", letterSpacing: 1 }}>{l}</div>
+            <div style={{ fontSize: 14, color: C.text, fontWeight: 600, marginTop: 4 }}>{v}</div>
+          </div>
+        ))}
+      </div>,
+      <div key="n">
+        {relatedNeeds.length > 0 ? relatedNeeds.map((n, i) => (
+          <div key={i} style={{ padding: 14, borderRadius: 8, background: C.bg, marginBottom: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+              <Badge text={n.status} color={statusColor(n.status)} />
+              <span style={{ fontSize: 11, color: C.green }}>{n.matches} matches</span>
+            </div>
+            <div style={{ fontSize: 13, color: C.text }}>{n.criteria}</div>
+          </div>
+        )) : <div style={{ color: C.textMuted, fontSize: 13 }}>Sin necesidades registradas</div>}
+      </div>,
+      <div key="p">
+        {relatedProposals.length > 0 ? relatedProposals.map((p, i) => (
+          <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 12, borderRadius: 8, background: C.bg, marginBottom: 8 }}>
+            <div>
+              <div style={{ fontSize: 13, color: C.text, fontWeight: 500 }}>{p.asset}</div>
+              <div style={{ fontSize: 11, color: C.textMuted }}>{p.type} · {p.amount}</div>
+            </div>
+            <Badge text={p.status} color={statusColor(p.status)} />
+          </div>
+        )) : <div style={{ color: C.textMuted, fontSize: 13 }}>Sin propuestas</div>}
+      </div>,
+    ];
+    content = tabContents[tab] || <div style={{ color: C.textMuted, fontSize: 13, padding: 20, textAlign: "center" }}>Contenido de pestaña "{tabs[tab]}"</div>;
+  }
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", justifyContent: "center", alignItems: "center" }} onClick={onClose}>
+      <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}/>
+      <div onClick={e => e.stopPropagation()} style={{ position: "relative", width: "85%", maxWidth: 900, maxHeight: "85vh", background: C.card, borderRadius: 16, border: `1px solid ${C.border}`, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 24px", borderBottom: `1px solid ${C.border}`, background: C.navy }}>
+          <div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: C.text }}>{entity.name}</div>
+            <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+              {entity.gate && <Badge text={entity.gate} color={statusColor(entity.gate)} />}
+              {entity.status && <Badge text={entity.status} color={statusColor(entity.status)} />}
+              {entity.pipeline && <Badge text={entity.pipeline} color={C.gold} />}
+              {entity.category && <Badge text={entity.category} color={C.blue} />}
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: C.textMuted, fontSize: 24, cursor: "pointer", padding: 4 }}>✕</button>
+        </div>
+        <div style={{ display: "flex", gap: 2, padding: "8px 24px", borderBottom: `1px solid ${C.border}`, overflowX: "auto", flexShrink: 0 }}>
+          {tabs.map((t, i) => (
+            <button key={i} onClick={() => setTab(i)} style={{
+              padding: "8px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap",
+              background: tab === i ? C.gold + "20" : "transparent", color: tab === i ? C.gold : C.textMuted,
+            }}>{t}</button>
+          ))}
+        </div>
+        <div style={{ padding: 24, overflowY: "auto", flex: 1 }}>{content}</div>
+      </div>
+    </div>
+  );
+};
+
+// ── KANBAN COLUMN ──
+const KanbanCol = ({ title, items, color, onCardClick }) => (
+  <div style={{ minWidth: 220, flex: 1 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: "0 4px" }}>
+      <Dot color={color || C.gold} />
+      <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{title}</span>
+      <span style={{ fontSize: 11, color: C.textMuted, background: C.bg, padding: "2px 8px", borderRadius: 10 }}>{items.length}</span>
+    </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      {items.map((item, i) => (
+        <div key={i} onClick={() => onCardClick && onCardClick(item)} style={{
+          padding: 14, borderRadius: 10, background: C.card, border: `1px solid ${C.border}`,
+          cursor: "pointer", transition: "all 0.15s",
+        }} onMouseEnter={e => { e.currentTarget.style.borderColor = color || C.gold; e.currentTarget.style.background = C.cardHover; }}
+           onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.background = C.card; }}>
+          <div style={{ fontSize: 13, fontWeight: 600, color: C.text, marginBottom: 6 }}>{item.name || item.investor || item.counterpart}</div>
+          {item.zone && <div style={{ fontSize: 11, color: C.textMuted }}>{item.zone} · {item.type}</div>}
+          {item.criteria && <div style={{ fontSize: 11, color: C.textMuted, lineHeight: 1.4 }}>{item.criteria}</div>}
+          {item.asset && <div style={{ fontSize: 11, color: C.textMuted }}>{item.asset}</div>}
+          {item.counterpart && item.type && <div style={{ fontSize: 11, color: C.textMuted }}>{item.type === "Inversión" ? "→ " : ""}{item.counterpart}</div>}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+            {item.responsible && <span style={{ fontSize: 10, color: C.textMuted }}>{item.responsible}</span>}
+            {item.price && <span style={{ fontSize: 11, fontWeight: 600, color: C.gold }}>{item.price}</span>}
+            {item.amount && item.amount !== "—" && <span style={{ fontSize: 11, fontWeight: 600, color: C.gold }}>{item.amount}</span>}
+            {item.matches !== undefined && <span style={{ fontSize: 11, color: C.green }}>{item.matches} matches</span>}
+          </div>
+        </div>
+      ))}
+      {items.length === 0 && <div style={{ padding: 20, textAlign: "center", fontSize: 12, color: C.textMuted, border: `1px dashed ${C.border}`, borderRadius: 10 }}>Vacío</div>}
+    </div>
+  </div>
+);
+
+// ── MAIN APP ──
+function App() {
+  const [nav, setNav] = useState("dashboard");
+  const [subNav, setSubNav] = useState(null);
+  const [modal, setModal] = useState(null);
+  const [modalType, setModalType] = useState(null);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [sideExpanded, setSideExpanded] = useState({ pipeline: true, crm: false, workspace: false });
+
+  const openFicha = useCallback((entity, type) => { setModal(entity); setModalType(type); }, []);
+
+  const navItems = [
+    { id: "dashboard", icon: "◫", label: "Dashboard" },
+    { id: "pipeline", icon: "▸", label: "Pipeline", children: [
+      { id: "p-assets", label: "Assets" }, { id: "p-proposals", label: "Propuestas" },
+      { id: "p-needs", label: "Necesidades" }, { id: "p-investors", label: "Inversores" },
+      { id: "p-operators", label: "Operadores" }, { id: "p-lenders", label: "Lenders" },
+    ]},
+    { id: "crm", icon: "◉", label: "CRM", children: [
+      { id: "c-assets", label: "Activos" }, { id: "c-investors", label: "Inversores" },
+      { id: "c-lenders", label: "Lenders" }, { id: "c-operators", label: "Operadores" },
+      { id: "c-collaborators", label: "Colaboradores" },
+    ]},
+    { id: "workspace", icon: "⊞", label: "Área de Trabajo", children: [
+      { id: "w-tasks", label: "Tareas" }, { id: "w-emails", label: "Emails" },
+      { id: "w-calendar", label: "Calendario" },
+    ]},
+    { id: "config", icon: "⚙", label: "Configuración" },
+  ];
+
+  const handleNav = (id, child) => {
+    if (child) { setNav(id); setSubNav(child); }
+    else if (navItems.find(n => n.id === id)?.children) {
+      setSideExpanded(p => ({ ...p, [id]: !p[id] }));
+      setNav(id); setSubNav(navItems.find(n => n.id === id).children[0].id);
+    } else { setNav(id); setSubNav(null); }
+  };
+
+  // ── DASHBOARD ──
+  const renderDashboard = () => (
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: C.text }}>Dashboard</h1>
+          <p style={{ margin: "4px 0 0", fontSize: 13, color: C.textMuted }}>Radiografía operativa — Marzo 2026</p>
+        </div>
+        <div style={{ display: "flex", gap: 6 }}>
+          {["Semana", "Mes", "Trimestre"].map((f, i) => (
+            <button key={f} style={{ padding: "6px 14px", borderRadius: 8, border: "none", fontSize: 11, fontWeight: 600, cursor: "pointer", background: i === 0 ? C.gold + "20" : C.card, color: i === 0 ? C.gold : C.textMuted }}>{f}</button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 20 }}>
+        {[
+          { label: "Activos en Pipeline", value: "8", sub: "3 pre-screening · 3 investment · 2 transaction", color: C.gold },
+          { label: "Equity en Levantamiento", value: "39.6M €", sub: "Comprometido: 12.8M € (32%)", color: C.green },
+          { label: "Propuestas Activas", value: "9", sub: "5 inversión · 2 operador · 1 lender · 1 advisory", color: C.blue },
+          { label: "Necesidades Abiertas", value: "4", sub: "8 matches identificados", color: C.pink },
+        ].map((kpi, i) => (
+          <div key={i} style={{ padding: 20, borderRadius: 12, background: C.card, border: `1px solid ${C.border}`, borderTop: `3px solid ${kpi.color}` }}>
+            <div style={{ fontSize: 11, color: C.textMuted, letterSpacing: 0.5 }}>{kpi.label}</div>
+            <div style={{ fontSize: 28, fontWeight: 800, color: kpi.color, margin: "6px 0" }}>{kpi.value}</div>
+            <div style={{ fontSize: 11, color: C.textMuted }}>{kpi.sub}</div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ padding: 20, borderRadius: 12, background: C.card, border: `1px solid ${C.border}` }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 16 }}>Actividad por Responsable</div>
+          {TEAM.map((name, i) => {
+            const assets = ASSETS.filter(a => a.responsible === name).length;
+            const proposals = PROPOSALS.filter(p => p.responsible === name).length;
+            const tasks = TASKS.filter((_, ti) => ti % TEAM.length === i).length;
+            return (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderBottom: i < 3 ? `1px solid ${C.border}` : "none" }}>
+                <div style={{ width: 32, height: 32, borderRadius: "50%", background: C.gold + "20", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: C.gold }}>{name[0]}{name[1]}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{name}</div>
+                  <div style={{ fontSize: 11, color: C.textMuted }}>{assets} activos · {proposals} propuestas · {tasks} tareas</div>
+                </div>
+                <div style={{ width: 80, height: 6, borderRadius: 3, background: C.bg, overflow: "hidden" }}>
+                  <div style={{ width: `${Math.min(100, (assets + proposals) * 12)}%`, height: "100%", borderRadius: 3, background: `linear-gradient(90deg, ${C.gold}, ${C.green})` }}/>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ padding: 20, borderRadius: 12, background: C.card, border: `1px solid ${C.border}` }}>
+          <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 16 }}>Actividad Reciente</div>
+          {[
+            { icon: "▸", text: "BTR Bilbao → Contrato de arras", time: "2h", color: C.green },
+            { icon: "✉", text: "Propuesta enviada a Lombardi & Associati", time: "4h", color: C.blue },
+            { icon: "⚡", text: "Match: Al Rashid ↔ Hotel Málaga", time: "5h", color: C.orange },
+            { icon: "📋", text: "Term sheet recibida de CaixaBank", time: "1d", color: C.purple },
+            { icon: "●", text: "Senior Living Sevilla → Analizado con BP", time: "1d", color: C.cyan },
+            { icon: "⚠", text: "Flex Living BCN sin movimiento (5 días)", time: "1d", color: C.red },
+          ].map((a, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 0", borderBottom: i < 5 ? `1px solid ${C.border}` : "none" }}>
+              <span style={{ fontSize: 12, color: a.color, width: 16, textAlign: "center" }}>{a.icon}</span>
+              <span style={{ flex: 1, fontSize: 12, color: C.text }}>{a.text}</span>
+              <span style={{ fontSize: 10, color: C.textMuted }}>{a.time}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── PIPELINE VIEWS ──
+  const renderPipeline = () => {
+    const sub = subNav || "p-assets";
+    const pipelineTabs = [
+      { id: "p-assets", label: "Assets" }, { id: "p-proposals", label: "Propuestas" },
+      { id: "p-needs", label: "Necesidades" }, { id: "p-investors", label: "Inversores" },
+      { id: "p-operators", label: "Operadores" }, { id: "p-lenders", label: "Lenders" },
+    ];
+
+    return (
+      <div>
+        <h1 style={{ margin: "0 0 16px", fontSize: 24, fontWeight: 800, color: C.text }}>Pipeline</h1>
+        <div style={{ display: "flex", gap: 4, marginBottom: 20, overflowX: "auto", paddingBottom: 4 }}>
+          {pipelineTabs.map(t => (
+            <button key={t.id} onClick={() => setSubNav(t.id)} style={{
+              padding: "8px 16px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700,
+              background: sub === t.id ? C.gold : C.card, color: sub === t.id ? C.navy : C.textMuted, whiteSpace: "nowrap",
+            }}>{t.label}</button>
+          ))}
+        </div>
+
+        {sub === "p-assets" && (
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: C.gold, marginBottom: 12, letterSpacing: 1 }}>PRE-SCREENING</div>
+            <div style={{ display: "flex", gap: 16, marginBottom: 28, overflowX: "auto" }}>
+              {["Para analizar", "Analizando", "Analizado con BP"].map(gate => (
+                <KanbanCol key={gate} title={gate} color={statusColor(gate)} items={ASSETS.filter(a => a.gate === gate)} onCardClick={a => openFicha(a, "asset")} />
+              ))}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: C.gold, marginBottom: 12, letterSpacing: 1 }}>INVESTMENT</div>
+            <div style={{ display: "flex", gap: 16, marginBottom: 28, overflowX: "auto" }}>
+              {["LOI enviada", "DD pre-arras", "Contrato de arras", "DD pre-escritura", "Escriturado"].map(gate => (
+                <KanbanCol key={gate} title={gate} color={statusColor(gate)} items={ASSETS.filter(a => a.pipeline === "Investment" && a.gate === gate)} onCardClick={a => openFicha(a, "asset")} />
+              ))}
+            </div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: C.gold, marginBottom: 12, letterSpacing: 1 }}>TRANSACTION</div>
+            <div style={{ display: "flex", gap: 16, overflowX: "auto" }}>
+              {["Tender operadores", "Propuesta recibida", "Negociación", "Contrato firmado"].map(gate => (
+                <KanbanCol key={gate} title={gate} color={statusColor(gate)} items={ASSETS.filter(a => a.pipeline === "Transaction" && a.gate === gate)} onCardClick={a => openFicha(a, "asset")} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {sub === "p-proposals" && (
+          <div>
+            {["Inversión", "Operador", "Lenders", "Advisory"].map(type => (
+              <div key={type} style={{ marginBottom: 28 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: type === "Inversión" ? C.green : type === "Operador" ? C.pink : type === "Lenders" ? C.purple : C.gold, marginBottom: 12, letterSpacing: 1 }}>{type.toUpperCase()}</div>
+                <div style={{ display: "flex", gap: 16, overflowX: "auto" }}>
+                  {(type === "Inversión" ? ["Borrador", "Enviada", "Vista", "Interesado", "Comprometido", "Firmado", "Capital ingresado"] :
+                    type === "Operador" ? ["Operador identificado", "Contactado", "Info enviada", "Propuesta recibida", "Negociación", "Acuerdo cerrado"] :
+                    type === "Lenders" ? ["Lender identificado", "Dossier enviado", "En análisis", "Term sheet recibida", "Negociación", "Formalizado"] :
+                    ["Identificada", "Análisis preliminar", "Propuesta enviada", "Negociación", "Mandato firmado", "En ejecución", "Cerrada"]
+                  ).map(status => (
+                    <KanbanCol key={status} title={status} color={statusColor(status)} items={PROPOSALS.filter(p => p.type === type && p.status === status)} />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {sub === "p-needs" && (
+          <div style={{ display: "flex", gap: 16, overflowX: "auto" }}>
+            {["Registrada", "En búsqueda activa", "Con candidatos", "Propuesta enviada", "Cerrada (match)"].map(status => (
+              <KanbanCol key={status} title={status} color={statusColor(status)} items={NEEDS.filter(n => n.status === status)} />
+            ))}
+          </div>
+        )}
+
+        {sub === "p-investors" && (
+          <div style={{ display: "flex", gap: 16, overflowX: "auto" }}>
+            {["Identificado", "Contactado", "Cualificado", "Activo", "Invirtiendo"].map(status => (
+              <KanbanCol key={status} title={status} color={statusColor(status)} items={INVESTORS.filter(i => i.status === status)} onCardClick={i => openFicha(i, "investor")} />
+            ))}
+          </div>
+        )}
+
+        {sub === "p-operators" && (
+          <div style={{ display: "flex", gap: 16, overflowX: "auto" }}>
+            {["Contactado", "En conversación", "Cualificado", "En red activa"].map(status => (
+              <KanbanCol key={status} title={status} color={statusColor(status)} items={OPERATORS.filter(o => o.status === status)} />
+            ))}
+          </div>
+        )}
+
+        {sub === "p-lenders" && (
+          <div style={{ display: "flex", gap: 16, overflowX: "auto" }}>
+            {["En conversación", "Cualificado", "En red activa"].map(status => (
+              <KanbanCol key={status} title={status} color={statusColor(status)} items={LENDERS.filter(l => l.status === status)} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ── CRM VIEWS ──
+  const renderCRM = () => {
+    const sub = subNav || "c-assets";
+    const crmTabs = [
+      { id: "c-assets", label: "Activos" }, { id: "c-investors", label: "Inversores" },
+      { id: "c-lenders", label: "Lenders" }, { id: "c-operators", label: "Operadores" },
+      { id: "c-collaborators", label: "Colaboradores" },
+    ];
+
+    const TableHeader = ({ cols }) => (
+      <div style={{ display: "grid", gridTemplateColumns: cols.map(c => c.w).join(" "), gap: 8, padding: "10px 16px", background: C.navy, borderRadius: "10px 10px 0 0" }}>
+        {cols.map((c, i) => <div key={i} style={{ fontSize: 11, fontWeight: 700, color: C.gold, letterSpacing: 0.5 }}>{c.label}</div>)}
+      </div>
+    );
+
+    const TableRow = ({ cols, values, onClick }) => (
+      <div onClick={onClick} style={{ display: "grid", gridTemplateColumns: cols.map(c => c.w).join(" "), gap: 8, padding: "12px 16px", borderBottom: `1px solid ${C.border}`, cursor: onClick ? "pointer" : "default", transition: "background 0.1s" }}
+        onMouseEnter={e => { if (onClick) e.currentTarget.style.background = C.cardHover; }} onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+        {values.map((v, i) => <div key={i} style={{ fontSize: 12, color: C.text, display: "flex", alignItems: "center" }}>{v}</div>)}
+      </div>
+    );
+
+    return (
+      <div>
+        <h1 style={{ margin: "0 0 16px", fontSize: 24, fontWeight: 800, color: C.text }}>CRM</h1>
+        <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+          {crmTabs.map(t => (
+            <button key={t.id} onClick={() => setSubNav(t.id)} style={{
+              padding: "8px 16px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700,
+              background: sub === t.id ? C.blue : C.card, color: sub === t.id ? C.navy : C.textMuted,
+            }}>{t.label}</button>
+          ))}
+        </div>
+
+        {sub === "c-assets" && (
+          <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+            <div style={{ padding: "16px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between" }}>
+              <input placeholder="Buscar activos..." style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 14px", color: C.text, fontSize: 12, width: 260, outline: "none" }} />
+              <button style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: C.gold, color: C.navy, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>+ Nuevo Activo</button>
+            </div>
+            <TableHeader cols={[{ label: "NOMBRE", w: "2fr" }, { label: "ZONA", w: "1fr" }, { label: "PIPELINE", w: "1fr" }, { label: "GATE", w: "1.2fr" }, { label: "PRECIO", w: "0.8fr" }, { label: "RESP.", w: "0.8fr" }]} />
+            {ASSETS.map((a, i) => (
+              <TableRow key={i} onClick={() => openFicha(a, "asset")} cols={[{ w: "2fr" }, { w: "1fr" }, { w: "1fr" }, { w: "1.2fr" }, { w: "0.8fr" }, { w: "0.8fr" }]}
+                values={[
+                  <span style={{ fontWeight: 600 }}>{a.name}</span>,
+                  a.zone,
+                  <Badge text={a.pipeline} color={C.gold} />,
+                  <Badge text={a.gate} color={statusColor(a.gate)} />,
+                  <span style={{ color: C.gold, fontWeight: 600 }}>{a.price}</span>,
+                  a.responsible,
+                ]} />
+            ))}
+          </div>
+        )}
+
+        {sub === "c-investors" && (
+          <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+            <div style={{ padding: "16px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between" }}>
+              <input placeholder="Buscar inversores..." style={{ background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "8px 14px", color: C.text, fontSize: 12, width: 260, outline: "none" }} />
+              <button style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: C.gold, color: C.navy, fontSize: 12, fontWeight: 700, cursor: "pointer" }}>+ Nuevo Inversor</button>
+            </div>
+            <TableHeader cols={[{ label: "NOMBRE", w: "2fr" }, { label: "TIPO", w: "1fr" }, { label: "CATEGORÍA", w: "0.8fr" }, { label: "TICKET", w: "1fr" }, { label: "ESTADO", w: "1fr" }, { label: "RESP.", w: "0.8fr" }]} />
+            {INVESTORS.map((inv, i) => (
+              <TableRow key={i} onClick={() => openFicha(inv, "investor")} cols={[{ w: "2fr" }, { w: "1fr" }, { w: "0.8fr" }, { w: "1fr" }, { w: "1fr" }, { w: "0.8fr" }]}
+                values={[
+                  <span style={{ fontWeight: 600 }}>{inv.name}</span>,
+                  inv.type,
+                  <Badge text={inv.category} color={inv.category === "Equity" ? C.green : C.purple} />,
+                  inv.ticket,
+                  <Badge text={inv.status} color={statusColor(inv.status)} />,
+                  inv.responsible,
+                ]} />
+            ))}
+          </div>
+        )}
+
+        {sub === "c-lenders" && (
+          <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+            <TableHeader cols={[{ label: "NOMBRE", w: "2fr" }, { label: "TIPO", w: "1.5fr" }, { label: "LTV", w: "1fr" }, { label: "ESTADO", w: "1fr" }]} />
+            {LENDERS.map((l, i) => (
+              <TableRow key={i} cols={[{ w: "2fr" }, { w: "1.5fr" }, { w: "1fr" }, { w: "1fr" }]}
+                values={[<span style={{ fontWeight: 600 }}>{l.name}</span>, l.type, l.ltv, <Badge text={l.status} color={statusColor(l.status)} />]} />
+            ))}
+          </div>
+        )}
+
+        {sub === "c-operators" && (
+          <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+            <TableHeader cols={[{ label: "NOMBRE", w: "1.5fr" }, { label: "TIPO ACTIVO", w: "1.5fr" }, { label: "ZONA", w: "1fr" }, { label: "MODELO", w: "1.2fr" }, { label: "ESTADO", w: "1fr" }]} />
+            {OPERATORS.map((o, i) => (
+              <TableRow key={i} cols={[{ w: "1.5fr" }, { w: "1.5fr" }, { w: "1fr" }, { w: "1.2fr" }, { w: "1fr" }]}
+                values={[<span style={{ fontWeight: 600 }}>{o.name}</span>, o.type, o.zone, o.model, <Badge text={o.status} color={statusColor(o.status)} />]} />
+            ))}
+          </div>
+        )}
+
+        {sub === "c-collaborators" && (
+          <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+            <TableHeader cols={[{ label: "NOMBRE", w: "1.5fr" }, { label: "CATEGORÍA", w: "1fr" }, { label: "ZONA", w: "1fr" }, { label: "ACTIVOS", w: "0.8fr" }, { label: "ÚLTIMO CONTACTO", w: "1.2fr" }]} />
+            {COLLABORATORS.map((c, i) => (
+              <TableRow key={i} cols={[{ w: "1.5fr" }, { w: "1fr" }, { w: "1fr" }, { w: "0.8fr" }, { w: "1.2fr" }]}
+                values={[<span style={{ fontWeight: 600 }}>{c.name}</span>, <Badge text={c.category} color={C.cyan} />, c.zone, c.assets, c.lastContact]} />
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ── WORKSPACE ──
+  const renderWorkspace = () => {
+    const sub = subNav || "w-tasks";
+    return (
+      <div>
+        <h1 style={{ margin: "0 0 16px", fontSize: 24, fontWeight: 800, color: C.text }}>Área de Trabajo</h1>
+        <div style={{ display: "flex", gap: 4, marginBottom: 20 }}>
+          {[{ id: "w-tasks", label: "Tareas" }, { id: "w-emails", label: "Emails" }, { id: "w-calendar", label: "Calendario" }].map(t => (
+            <button key={t.id} onClick={() => setSubNav(t.id)} style={{
+              padding: "8px 16px", borderRadius: 10, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700,
+              background: sub === t.id ? C.green : C.card, color: sub === t.id ? C.navy : C.textMuted,
+            }}>{t.label}</button>
+          ))}
+        </div>
+
+        {sub === "w-tasks" && (
+          <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, overflow: "hidden" }}>
+            {TASKS.map((t, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 20px", borderBottom: `1px solid ${C.border}` }}>
+                <div style={{ width: 18, height: 18, borderRadius: 4, border: `2px solid ${priorityColor(t.priority)}`, flexShrink: 0, cursor: "pointer" }}/>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 13, color: C.text, fontWeight: 500 }}>{t.text}</div>
+                  <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                    <span style={{ fontSize: 11, color: C.textMuted }}>{t.entity}</span>
+                    <Badge text={t.type} color={t.type === "Activo" ? C.gold : t.type === "Propuesta" ? C.green : t.type === "Operador" ? C.pink : t.type === "Lender" ? C.purple : C.blue} />
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: t.due === "Hoy" ? C.red : C.textMuted }}>{t.due}</div>
+                  <Badge text={t.priority} color={priorityColor(t.priority)} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {sub === "w-emails" && (
+          <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, padding: 40, textAlign: "center" }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>✉</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Integración Email</div>
+            <div style={{ fontSize: 13, color: C.textMuted, marginTop: 8, maxWidth: 400, margin: "8px auto 0" }}>
+              Fase 2 — Sync bidireccional con Gmail. Cliente de email integrado con vinculación manual de hilos a entidades.
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 20 }}>
+              {["Ver emails", "Responder", "Vincular a activo", "Vincular a inversor"].map(f => (
+                <span key={f} style={{ padding: "6px 12px", borderRadius: 8, background: C.blue + "15", color: C.blue, fontSize: 11, fontWeight: 600 }}>{f}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {sub === "w-calendar" && (
+          <div style={{ background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, padding: 24 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2, marginBottom: 4 }}>
+              {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map(d => (
+                <div key={d} style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textAlign: "center", padding: 8 }}>{d}</div>
+              ))}
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 2 }}>
+              {Array.from({ length: 31 }, (_, i) => {
+                const hasTasks = [2, 3, 9, 10, 14, 17, 22, 25].includes(i);
+                const isToday = i === 8;
+                return (
+                  <div key={i} style={{
+                    padding: 10, borderRadius: 8, textAlign: "center", minHeight: 50,
+                    background: isToday ? C.gold + "15" : hasTasks ? C.card : "transparent",
+                    border: isToday ? `1px solid ${C.gold}40` : `1px solid transparent`,
+                  }}>
+                    <div style={{ fontSize: 13, fontWeight: isToday ? 800 : 400, color: isToday ? C.gold : C.text }}>{i + 1}</div>
+                    {hasTasks && <div style={{ width: 5, height: 5, borderRadius: "50%", background: C.gold, margin: "4px auto 0" }}/>}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: 12, fontSize: 11, color: C.textMuted, textAlign: "center" }}>Sync bidireccional con Google Calendar & Google Tasks</div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  // ── NOTIFICATIONS PANEL ──
+  const NotifPanel = () => (
+    <div style={{ position: "absolute", top: 50, right: 16, width: 360, background: C.card, borderRadius: 12, border: `1px solid ${C.border}`, boxShadow: "0 16px 48px rgba(0,0,0,0.5)", zIndex: 900, maxHeight: 400, overflow: "auto" }}>
+      <div style={{ padding: "14px 18px", borderBottom: `1px solid ${C.border}`, fontSize: 14, fontWeight: 700, color: C.text }}>Notificaciones</div>
+      {[
+        { text: "Match: Al Rashid ↔ Hotel Boutique Málaga", time: "5h", color: C.orange, icon: "⚡" },
+        { text: "Nordic Capital comprometió 1.5M € en Hotel Málaga", time: "1d", color: C.green, icon: "✓" },
+        { text: "CaixaBank envió term sheet para BTR Bilbao", time: "1d", color: C.purple, icon: "📋" },
+        { text: "Flex Living Barcelona sin movimiento (5 días)", time: "2d", color: C.red, icon: "⚠" },
+        { text: "3 tareas vencidas", time: "2d", color: C.red, icon: "⏰" },
+        { text: "Green Bridge Capital sin contactar (2+ semanas)", time: "3d", color: C.orange, icon: "📞" },
+      ].map((n, i) => (
+        <div key={i} style={{ display: "flex", gap: 10, padding: "12px 18px", borderBottom: `1px solid ${C.border}`, cursor: "pointer" }}
+          onMouseEnter={e => e.currentTarget.style.background = C.cardHover} onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+          <span style={{ fontSize: 14, width: 20, textAlign: "center" }}>{n.icon}</span>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, color: C.text, lineHeight: 1.4 }}>{n.text}</div>
+            <div style={{ fontSize: 10, color: C.textMuted, marginTop: 2 }}>Hace {n.time}</div>
+          </div>
+          <Dot color={n.color} />
+        </div>
+      ))}
+    </div>
+  );
+
+  const currentSection = nav === "dashboard" ? renderDashboard() : nav === "pipeline" ? renderPipeline() : nav === "crm" ? renderCRM() : nav === "workspace" ? renderWorkspace() :
+    <div style={{ padding: 40, textAlign: "center" }}><div style={{ fontSize: 40, marginBottom: 12 }}>⚙</div><div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Configuración</div><div style={{ fontSize: 13, color: C.textMuted, marginTop: 8 }}>Roles, permisos y ajustes del sistema</div></div>;
+
+  return (
+    <div style={{ display: "flex", height: "100vh", background: C.bg, fontFamily: "'Inter', -apple-system, system-ui, sans-serif", overflow: "hidden" }}>
+      {/* SIDEBAR */}
+      <nav style={{ width: 210, flexShrink: 0, background: C.navy, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+        <div style={{ padding: "20px 16px 16px", borderBottom: `1px solid ${C.border}` }}>
+          <div style={{ fontSize: 16, fontWeight: 800, color: C.gold, letterSpacing: 0.5 }}>REALAIZE</div>
+          <div style={{ fontSize: 10, color: C.textMuted, letterSpacing: 1.5, marginTop: 2 }}>CAPITAL CRM</div>
+        </div>
+        <div style={{ padding: "12px 8px", flex: 1 }}>
+          {navItems.map(item => (
+            <div key={item.id}>
+              <button onClick={() => handleNav(item.id)} style={{
+                display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", marginBottom: 2,
+                borderRadius: 8, border: "none", cursor: "pointer", textAlign: "left", fontSize: 13, fontWeight: 600,
+                background: nav === item.id ? C.gold + "12" : "transparent",
+                color: nav === item.id ? C.gold : C.textMuted, transition: "all 0.15s",
+              }}>
+                <span style={{ fontSize: 14, width: 20, textAlign: "center" }}>{item.icon}</span>
+                {item.label}
+                {item.children && <span style={{ marginLeft: "auto", fontSize: 10, transform: sideExpanded[item.id] ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>▸</span>}
+              </button>
+              {item.children && sideExpanded[item.id] && (
+                <div style={{ paddingLeft: 20, marginBottom: 4 }}>
+                  {item.children.map(child => (
+                    <button key={child.id} onClick={() => handleNav(item.id, child.id)} style={{
+                      display: "block", width: "100%", padding: "7px 12px", borderRadius: 6, border: "none", cursor: "pointer",
+                      textAlign: "left", fontSize: 12, fontWeight: subNav === child.id ? 600 : 400,
+                      background: subNav === child.id ? C.gold + "10" : "transparent",
+                      color: subNav === child.id ? C.gold : C.textMuted,
+                    }}>{child.label}</button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.border}` }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ width: 30, height: 30, borderRadius: "50%", background: C.gold + "25", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: C.gold }}>WE</div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>Admin</div>
+              <div style={{ fontSize: 10, color: C.textMuted }}>we@realaize.capital</div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* MAIN */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        {/* HEADER */}
+        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0 24px", height: 52, borderBottom: `1px solid ${C.border}`, background: C.navy, flexShrink: 0, position: "relative" }}>
+          <div style={{ fontSize: 13, color: C.textMuted }}>
+            {nav === "dashboard" ? "Dashboard" : nav === "pipeline" ? `Pipeline → ${(navItems.find(n => n.id === "pipeline")?.children?.find(c => c.id === subNav)?.label) || "Assets"}` : nav === "crm" ? `CRM → ${(navItems.find(n => n.id === "crm")?.children?.find(c => c.id === subNav)?.label) || "Activos"}` : nav === "workspace" ? `Área de Trabajo → ${(navItems.find(n => n.id === "workspace")?.children?.find(c => c.id === subNav)?.label) || "Tareas"}` : "Configuración"}
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <button onClick={() => setNotifOpen(!notifOpen)} style={{ background: "none", border: "none", cursor: "pointer", position: "relative", padding: 4 }}>
+              <span style={{ fontSize: 18 }}>🔔</span>
+              <div style={{ position: "absolute", top: 0, right: 0, width: 16, height: 16, borderRadius: "50%", background: C.red, fontSize: 9, color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>6</div>
+            </button>
+          </div>
+          {notifOpen && <NotifPanel />}
+        </header>
+
+        {/* CONTENT */}
+        <main style={{ flex: 1, overflow: "auto", padding: 24 }} onClick={() => notifOpen && setNotifOpen(false)}>
+          {currentSection}
+        </main>
+      </div>
+
+      {/* FICHA MODAL */}
+      {modal && <FichaModal entity={modal} type={modalType} onClose={() => { setModal(null); setModalType(null); }} />}
+    </div>
+  );
+}
+
+    // Render
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(React.createElement(App));
+  </script>
 </body>
 </html>
